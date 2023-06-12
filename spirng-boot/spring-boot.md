@@ -1,0 +1,269 @@
+# Web page
+
+https://spring.io/projects/spring-boot
+
+[feature](# Features)
+
+[Dependency tree](# Dependency tree)
+
+## Features
+
+- Create stand-alone Spring applications
+
+- Embed Tomcat, Jetty or Undertow directly (no need to deploy WAR files)
+
+- **Provide opinionated 'starter' dependencies to simplify your build configuration**
+
+  - *No need import 10+ jars, intead using one spring starter* (spring-boot-web-starter...)
+
+- **Automatically configure Spring and 3rd party libraries whenever possible**
+
+  - default configure already there without manually input 
+
+- Provide production-ready features such as metrics, health checks, and externalized configuration
+
+- Absolutely no code generation and no requirement for XML configuration
+
+- **Outside config**
+
+  /app/demo.jar
+
+  /app/application.properties  -> this file file ovr configures, no need rebuild a demo jar
+
+
+
+# Create hello world
+
+- Create empty project
+
+![image-20230611094710294](image-20230611094710294.png)
+
+
+
+- Create module under it
+
+![image-20230611094906780](image-20230611094906780.png)
+
+- Minimum pom
+
+Parent -- spring-boot-starter-parent
+
+Dependency -- spring-boot-starter-web
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.0.5</version>
+    </parent>
+
+    <artifactId>hello</artifactId>
+
+    <properties>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+    </dependencies>
+</project>
+```
+
+
+
+If you already with a parent then can import as a bom
+
+```xml
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <!-- Import dependency management from Spring Boot -->
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>3.0.5</version>  <!-- Replace with your desired Spring Boot version -->
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+```
+
+
+
+set relative path empty can disable find pom in local path
+
+==<relativePath/>==
+
+```xml
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.0.5</version>
+        <relativePath/> <!-- lookup parent from repository -->
+    </parent>
+```
+
+
+
+bootjar plugin
+
+```xml
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+```
+
+
+
+- app & controller
+
+  ```java
+  @SpringBootApplication
+  public class MyApp {
+      public static void main(String[] args) {
+          SpringApplication.run(MyApp.class,args);
+      }
+  }
+  ```
+
+  ```java
+  @RestController
+  public class MyController {
+      @GetMapping("/hello")
+      public String hello() {
+          return "hello";
+      }
+  }
+  ```
+
+
+
+# Dependency tree
+
+![image-20230611105119561](image-20230611105119561.png)
+
+
+
+# Log
+
+
+
+any starter-> spring-boot-starter -> spring-boot-starter-logging
+
+
+
+slf4j + logback
+
+
+
+log文件加 -spring使spring接管
+
+
+
+log4j2-spring.xml
+
+logback-spring.xml
+
+有了配置文件后，application properties 不再配置logging属性
+
+
+
+==导入第三方项目时，先排掉日志包，使用slf4j桥接器，接到你的项目的slf4j上==
+
+
+
+![image-20230611181324844](image-20230611181324844.png)
+
+```xml
+  <dependencies>
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+      <version>1.4.6</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-to-slf4j</artifactId>
+      <version>2.19.0</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>jul-to-slf4j</artifactId>
+      <version>2.0.7</version>
+      <scope>compile</scope>
+    </dependency>
+  </dependencies>
+```
+
+
+
+use listener to load log system
+
+
+
+Property name:
+
+logging.XXX
+
+
+
+Setup @ spring-boot.jar -- spring-configuration-metadata.json
+
+```json
+    {
+      "name": "logging.pattern.console",
+      "type": "java.lang.String",
+      "description": "Appender pattern for output to the console. Supported only with the default Logback setup.",
+      "sourceType": "org.springframework.boot.context.logging.LoggingApplicationListener",
+      "defaultValue": "%clr(%d{${LOG_DATEFORMAT_PATTERN:-yyyy-MM-dd'T'HH:mm:ss.SSSXXX}}){faint} %clr(${LOG_LEVEL_PATTERN:-%5p}) %clr(${PID:- }){magenta} %clr(---){faint} %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}"
+    },
+```
+
+
+
+manually ovr @ properties file
+
+```properties
+logging.pattern.console=%d{yyyy-MM-dd HH:mm:ss} %-5level [%thread] %logger{15}: %msg%n
+logging.level.root=INFO
+logging.level.com.fansy.app.controller=DEBUG
+logging.file.name=/Users/hg26502/workspace/spring-boot-3/hello/hg.log
+logging.logback.rollingpolicy.file-name-pattern=${LOG_FILE}.%d{yyyy-MM-dd}.%i.gz
+logging.logback.rollingpolicy.max-file-size=1KB
+```
+
+![image-20230611175100561](image-20230611175100561.png)
+
+log group
+
+```properties
+logging.group.hg=com.fansy.app.controller,com.fansy.app
+logging.level.hg=DEBUG
+
+# springboot groups
+logging.level.sql=DEBUG
+logging.level.web=DEBUG
+```
+
+
+
+
+
+
+
