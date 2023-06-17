@@ -182,7 +182,7 @@ logback-spring.xml
 
 
 
-==导入第三方项目时，先排掉日志包，使用slf4j桥接器，接到你的项目的slf4j上==
+==导入第三方项目时，先排掉日志包，使用slf4j桥接器，接到你的项目的slf4j上
 
 
 
@@ -260,6 +260,87 @@ logging.level.hg=DEBUG
 logging.level.sql=DEBUG
 logging.level.web=DEBUG
 ```
+
+
+
+# Profiles
+
+- 配置文件的分环境
+
+​    application.properties
+
+​    application-intg.properties
+
+
+
+- bean的分环境
+
+```java
+@Bean
+@Profile("intg")
+public Person person() {}
+```
+
+```java
+@Component
+@Profile("intg")
+Pblic class XXX
+```
+
+
+
+- 环境设置
+
+  在properties文件里设
+
+  ==*spring.profiles.active=intg*==
+
+​	   在代码中设，命令行参数，java参数等等
+
+```java
+    public static void main(String[] args) {
+        SpringApplication app = new SpringApplication(MyApp.class);
+        Map<String, Object> defaultProperties = new HashMap<>();
+        defaultProperties.put("spring.profiles.active","intg");
+        app.setDefaultProperties(defaultProperties);
+        app.run(args);
+    }
+```
+
+
+
+## ConfigurationProperties
+
+```java
+@Component
+@ConfigurationProperties(prefix = "common.hg")
+public class Env {
+    private String url;
+    private long port;
+```
+
+
+
+```properties
+##application.properties
+spring.profiles.active=intg
+
+##application-intg.properties
+common.hg.url = www.baidu.com
+common.hg.port = 80
+```
+
+
+
+```java
+public class MyController {
+    @Autowired
+    private Env env;
+```
+
+
+
+
 
 
 
