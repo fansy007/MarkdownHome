@@ -340,11 +340,150 @@ public class MyController {
 
 
 
+# Junit
+
+- @SpringBootTest("spring.profiles.active=intg")
+
+会init 容器中beans,测试类必须用app的包路径，或子包路径
+
+- dependency
+
+  ```xml
+          <dependency>
+              <groupId>org.springframework.boot</groupId>
+              <artifactId>spring-boot-starter-test</artifactId>
+              <scope>test</scope>
+          </dependency>
+  ```
+
+  会引入junit5 Mockito等
 
 
 
+- Junit5
+
+  @BeforeAll 只跑一次
+
+  @BeforeEach 跑n次
+
+- @ParameterizedTest
+  @MethodSource("person")
+
+  给测试类传参数
 
 
 
+例子
+
+```java
+@SpringBootTest("spring.profiles.active=intg")
+public class MainTest {
+    Logger log = LoggerFactory.getLogger(MainTest.class);
+    @Autowired
+    Env env;
+    String hostInfo;
+    @BeforeEach
+    public void init() {
+        hostInfo = String.format("%s:%d",env.getUrl(),env.getPort());
+    }
+    @ParameterizedTest
+    @MethodSource("person")
+    public void testInitLoad(Person p) {
+        log.info(String.format("name=%s,age=%d",p.getName(),p.getAge()));
+        log.info(hostInfo);
+    }
+    static Stream<Person> person() {
+        Person p = new Person();
+        p.setAge(20);
+        p.setName("Lee");
+        return Arrays.asList(p).stream();
+    }
+}
+```
 
 
+
+# 生命周期
+
+
+
+![image-20230618090954693](image-20230618090954693.png)
+
+
+
+Listener file: spring.factories
+
+![image-20230618091942005](image-20230618091942005.png)
+
+```pro
+# spring.factories
+# Run Listeners
+org.springframework.boot.SpringApplicationRunListener=\
+org.springframework.boot.context.event.EventPublishingRunListener
+```
+
+
+
+可自定义Listener实现SpringApplicationRunListener接口
+
+```java
+public class SimpleSpringRunListner implements SpringApplicationRunListener
+```
+
+![image-20230618092703909](image-20230618092703909.png)
+
+第一个是springboot系统配置的
+
+
+
+SpringApplication events
+
+## starting (拉listeners) 
+
+## prepareEnrironment
+
+导properties, outside setDefaultProperties传入的
+
+```java
+
+        if (!CollectionUtils.isEmpty(this.defaultProperties)) {
+            DefaultPropertiesPropertySource.addOrMerge(this.defaultProperties, sources);
+        }
+```
+
+
+
+![image-20230618093958154](image-20230618093958154.png)
+
+
+
+## createApplicationContext
+
+```java
+    protected ConfigurableApplicationContext createApplicationContext() {
+        return this.applicationContextFactory.create(this.webApplicationType);
+    }
+```
+
+## prepareContext
+
+Before refresh setup context other things
+
+```java
+private void prepareContext(DefaultBootstrapContext bootstrapContext, ConfigurableApplicationContext context, ConfigurableEnvironment environment, SpringApplicationRunListeners listeners, ApplicationArguments applicationArguments, Banner printedBanner) {
+    
+```
+
+## refreshContext
+
+this is most critical -- bean loadings
+
+this.refreshContext(context);
+
+## afterRefresh
+
+nothing happen, started
+
+## callRunners
+
+this.callRunners(context, applicationArguments);
