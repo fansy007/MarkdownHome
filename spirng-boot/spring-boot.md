@@ -487,3 +487,91 @@ nothing happen, started
 ## callRunners
 
 this.callRunners(context, applicationArguments);
+
+
+
+# CommandLineRunner ApplicationRunner
+
+do something before springboot app ready
+
+SpringApplication::run
+
+```java
+listeners.started(context, timeTakenToStartup);
+this.callRunners(context, applicationArguments);
+```
+
+
+
+Sample code
+
+```java
+public class SimpleCommandLineRunner implements CommandLineRunner {
+    static Logger logger = LoggerFactory.getLogger(SimpleCommandLineRunner.class);
+    @Override
+    public void run(String... args) throws Exception {
+        logger.info("!!!!!SimpleCommandLineRunner is running");
+          Optional.ofNullable(args).map(Stream::of)
+            .orElseGet(Stream::empty).forEach(logger::info);
+    }
+}
+```
+
+
+
+META_INFO/spring.factories
+
+```properties
+org.springframework.boot.CommandLineRunner=com.fansy.app.event.SimpleCommandLineRunner
+```
+
+
+
+# Spring Event publish 
+
+
+
+- ApplicationEventPublisher (ApplicationEventPublisherAware)
+- Define Event (public class HelloEvent extends ApplicationEvent)
+- Define EventListene (@EventListener)
+
+
+
+sample
+
+```java
+public class MyController implements ApplicationEventPublisherAware {
+
+    ApplicationEventPublisher applicationEventPublisher;
+  
+    @GetMapping("/hello")
+    @ResponseBody
+    public String hello() {
+        log.debug("hello, hello!!!!!!!!!!");
+        log.info(String.format("%s:%d", env.getUrl(),env.getPort()));
+        applicationEventPublisher.publishEvent(new HelloEvent("hello, hello!!!!!!!!!!"));
+        return "hello";
+    }
+```
+
+
+
+```java
+public class HelloEvent extends ApplicationEvent {
+    public HelloEvent(String source) {
+        super(source);
+    }
+}
+```
+
+
+
+```java
+@EventListener
+public void consumeHelloEvent(HelloEvent helloEvent) {
+    logger.info(String.format("!!!!!Event received: %s", helloEvent.getSource()));
+}
+```
+
+
+
