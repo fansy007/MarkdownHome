@@ -211,7 +211,9 @@ logback-spring.xml
   </dependencies>
 ```
 
+logback-classic 适配器
 
+log4j-to-slf4j， jul-to-slf4j 桥接器
 
 use listener to load log system
 
@@ -405,9 +407,9 @@ public class MainTest {
 
 # 生命周期
 
+![image-20230622222403272](image-20230622222403272.png)
 
 
-![image-20230618090954693](image-20230618090954693.png)
 
 
 
@@ -533,7 +535,7 @@ org.springframework.boot.CommandLineRunner=com.fansy.app.event.SimpleCommandLine
 
 - ApplicationEventPublisher (ApplicationEventPublisherAware)
 - Define Event (public class HelloEvent extends ApplicationEvent)
-- Define EventListene (@EventListener)
+- Define EventListener (@EventListener)
 
 
 
@@ -574,4 +576,190 @@ public void consumeHelloEvent(HelloEvent helloEvent) {
 ```
 
 
+
+# Springboot 加载原理
+
+
+
+![image-20230623091241626](image-20230623091241626.png)
+
+
+
+@SpringBootApplication
+
+- @EnableAutoConfiguration
+  - @AutoConfigurationPackage -- 扫描app类所在package的component，加入spring容器
+  - @Import(AutoConfigurationImportSelector.class) -- spi机制加载 META-INF/spring/...... 下所有列出的AutoConfiguration的类
+
+
+
+# AutoConfiguration
+
+
+
+- define @EnableXXX annotation class, use this class import config class
+
+  ```java
+  @Retention(RetentionPolicy.RUNTIME)
+  @Target({ElementType.TYPE})
+  @Documented
+  @Import(RobotAutoConfiguration.class)
+  public @interface EnableRobot
+  ```
+
+  ```java
+  @Import({RobotProperties.class, RobotService.class})
+  @Configuration
+  public class RobotAutoConfiguration {
+      @Bean //把组件导入到容器中
+      public RobotController robotController(){
+          return new RobotController();
+      }
+  }
+  ```
+
+- use SPI
+
+  Create new module
+
+  ```xml
+  ##pom.xml
+  <groupId>com.fansy</groupId>
+  <artifactId>hg-simple-starter</artifactId>
+  
+  <dependencies>
+      <dependency>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-autoconfigure</artifactId>
+          <scope>compile</scope>
+      </dependency>
+      <dependency>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-starter-logging</artifactId>
+          <scope>compile</scope>
+      </dependency>
+      <dependency>
+          <groupId>org.projectlombok</groupId>
+          <artifactId>lombok</artifactId>
+          <scope>provided</scope>
+      </dependency>
+  </dependencies>
+  ```
+
+  
+
+  Write AutoConfiguration class
+
+  ```java
+  @AutoConfiguration
+  @ConditionalOnProperty(
+          prefix = "hg.simple",
+          name = {"auto"},
+          havingValue = "true",
+          matchIfMissing = false
+  )
+  public class HgSimpleAutoConfiguration {
+      @Bean
+      public SimpleHgService simpleHgService() {
+          return new SimpleHgService();
+      }
+  
+      @Bean
+      public HgSimpleProperty hgSimpleProperty() {
+          return new HgSimpleProperty();
+      }
+  }
+  
+  ```
+
+  
+
+Write SPI
+
+![image-20230623160315227](image-20230623160315227.png)
+
+```sh
+com.fansy.simple.HgSimpleAutoConfiguration
+```
+
+
+
+when other mudole using hg-simple-starter, write properties:
+
+```java
+hg.simple.auto = true
+hg.simple.name = haining
+hg.simple.value = 20230622
+```
+
+
+
+```java
+@Autowired
+private SimpleHgService simpleHgService;
+```
+
+
+
+# HttpServiceProxy
+
+call a restful http, by a proxy style
+
+```xml
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webflux</artifactId>
+        </dependency>
+```
+
+
+
+## define interface
+
+Interface should point to real http url
+
+```java
+public interface HelloProxy {
+    @GetExchange(url = "http://localhost:8888/hello", accept = MediaType.TEXT_PLAIN_VALUE)
+    Mono<String> doHello();
+
+    @GetExchange(url = "http://localhost:8888/sum", accept = MediaType.TEXT_PLAIN_VALUE)
+    Mono<String> doSum(@RequestParam("num") int num);
+}
+```
+
+
+
+## Config to weave HelloProxy
+
+webClient -> HttpServiceProxyFactory -> HelloProxy
+
+```java
+    @Bean
+    WebClient webClient() {
+        HttpClient httpClient = HttpClient.create()
+                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 10000) // 连接超时
+                .doOnConnected(conn -> conn.addHandlerLast(new ReadTimeoutHandler(10, TimeUnit.SECONDS))); // 读取超时
+        return WebClient.builder().clientConnector(new ReactorClientHttpConnector(httpClient)).build();
+    }
+
+    @Bean
+    HttpServiceProxyFactory httpServiceProxyFactory(WebClient webClient) {
+        return HttpServiceProxyFactory.builder(WebClientAdapter.forClient(webClient)).build();
+    }
+
+    @Bean
+    HelloProxy helloProxy(HttpServiceProxyFactory httpServiceProxyFactory) {
+        return httpServiceProxyFactory.createClient(HelloProxy.class);
+    }
+```
+
+
+
+## Using HelloProxy
+
+```java
+HelloProxy helloProxy = ctx.getBean(HelloProxy.class);
+System.out.println("!!!!!!!" + helloProxy.doSum(100).block());
+```
 
