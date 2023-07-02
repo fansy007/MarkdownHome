@@ -763,3 +763,116 @@ HelloProxy helloProxy = ctx.getBean(HelloProxy.class);
 System.out.println("!!!!!!!" + helloProxy.doSum(100).block());
 ```
 
+
+
+
+
+# Kafka
+
+
+
+![image-20230702091345682](image-20230702091345682.png) 
+
+
+
+
+
+## add docker's Kafka nam into your os hosts mapping
+
+```sh
+(base) hg26502@192 ~ % sudo vi /etc/hosts
+(192.168.31.88   5241093bb787)
+(base) hg26502@192 ~ % sudo killall -HUP mDNSResponder
+```
+
+
+
+## Add depedency
+
+```xml
+        <dependency>
+            <groupId>org.springframework.kafka</groupId>
+            <artifactId>spring-kafka-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.kafka</groupId>
+            <artifactId>spring-kafka</artifactId>
+        </dependency>
+```
+
+
+
+## Config properties
+
+kafka msg key value need Serializer 
+
+```properties
+spring.kafka.bootstrap-servers=192.168.31.88:9092
+spring.kafka.producer.key-serializer=org.apache.kafka.common.serialization.StringSerializer
+spring.kafka.producer.value-serializer=org.springframework.kafka.support.serializer.JsonSerializer
+```
+
+
+
+## Send msg
+
+by template
+
+```java
+@SpringBootTest("spring.profiles.active=intg")
+@Slf4j
+public class KafkaTest {
+    @Autowired
+    KafkaTemplate template;
+
+    @Test
+    public void testSendMsg() {
+        StopWatch watch = new StopWatch();
+        watch.start();
+        CompletableFuture[] futures = IntStream.rangeClosed(1, 10000).mapToObj(i ->{
+            Person p = new Person("Lee",i);
+            return sendMsg(p, String.format("person%d",i));
+        }).toArray(CompletableFuture[]::new);
+
+        CompletableFuture.allOf(futures).join();
+        watch.stop();
+        log.info(String.format("Time Millis: %d",watch.getTotalTimeMillis()));
+    }
+    public CompletableFuture sendMsg(Person p, String key) {
+        return template.send("news", key,p);
+    }
+}
+```
+
+
+
+## Consume msg
+
+simply use annotation
+
+@EnableKafka
+
+@KafkaListener
+
+```java
+@EnableKafka
+@SpringBootApplication
+public class MyApp {
+  
+  
+```
+
+```java
+@Component
+@Slf4j
+public class SimpleKafkaListener {
+
+    @KafkaListener(topics={"news"}, groupId="hgListener")
+    public void doListen(ConsumerRecord record) {
+        log.info(String.format("key:%s, value:%s", record.key(),record.value()));
+    }
+}
+```
+

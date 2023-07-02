@@ -7,8 +7,6 @@ IPv4 地址 . . . . . . . . . . . . : 192.168.7.111(首选)
 ```shell
 [root@node1 hg26502]# yum list installed|grep docker
 [root@node1 hg26502]# yum -y remove docker-ce-cli.x86_64
-
-
 ```
 # 3、安装
 ## 1、centos下安装docker

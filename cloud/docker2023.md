@@ -1,3 +1,15 @@
+# reboost
+
+```sh
+systemctl restart networkManager #centeros8
+shutdown -r now
+
+```
+
+
+
+
+
 # Install redis
 
 prepare a folder
