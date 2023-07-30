@@ -964,3 +964,210 @@ authorize by role or by authority
     }
 ```
 
+
+
+# Actuator & Prometheus
+
+http://localhost:8888/actuator/
+
+Metrics, env, configprops
+
+pom.xml
+
+```xml
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+        </dependency>
+```
+
+
+
+expose all endpoints
+
+```properties
+#actuator
+management.endpoints.web.exposure.include=*
+management.endpoint.health.enabled=true
+management.endpoint.health.show-details=always
+```
+
+
+
+## self define health check
+
+http://localhost:8888/actuator/health
+
+result
+
+```json
+"my":{"status":"UP","details":{"code":200}}
+```
+
+
+
+you add code like this
+
+```java
+@Component
+public class MyHealthIndicator extends AbstractHealthIndicator {
+    @Autowired
+    MyController testController;
+    @Override
+    protected void doHealthCheck(Health.Builder builder) throws Exception {
+        String result = testController.hello();
+        if(StringUtils.hasLength(result)) {
+            builder.up().withDetail("code",200);
+        } else {
+            builder.down().withDetail("code",500);
+        }
+    }
+}
+```
+
+
+
+## self define metrics check
+
+pom.xml
+
+```xml
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+        </dependency>
+```
+
+
+
+code
+
+MeterRegistry meterRegistry -- add a counter
+
+when the method invoked count ++
+
+
+
+Monitor @ url
+
+`http://localhost:8888/actuator/metrics/hg.sayHello.tiems`
+
+```java
+public class SimpleHgService {
+    @Autowired
+    HgSimpleProperty hgSimpleProperty;
+
+    Counter counter;
+    public SimpleHgService(MeterRegistry meterRegistry) {
+        counter = meterRegistry.counter("hg.sayHello.times");
+    }
+    public void sayHello() {
+        log.info("HgSimpleAutoConfiguration enabled");
+        log.info(String.format("name=%s, value=%s",hgSimpleProperty.getName(),hgSimpleProperty.getValue()));
+        counter.increment();
+    }
+}
+```
+
+
+
+## grafana & prometheus
+
+Url
+
+admin/198263
+
+http://192.168.31.88:3000/?orgId=1
+
+
+
+http://192.168.31.88:9090/graph?g0.expr=&g0.tab=1&g0.stacked=0&g0.show_exemplars=0&g0.range_input=1h
+
+
+
+
+
+Add pom then actuator will have metrics
+
+http://localhost:8888/actuator/prometheus
+
+```xml
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+        </dependency>
+```
+
+
+
+
+
+### Check promethues in docker's bind
+
+docker inspect prometheus|less
+
+```xml
+            {
+                "Type": "bind",
+                "Source": "/root/prod/prometheus.yml",
+                "Destination": "/etc/prometheus/prometheus.yml",
+                "Mode": "rw",
+                "RW": true,
+                "Propagation": "rprivate"
+            },
+```
+
+
+
+
+
+Modify /root/prod/prometheus.yml
+
+```yml
+  - job_name: 'hello'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['192.168.31.117:8888']
+        labels:
+          nodename: 'hello'
+```
+
+
+
+promethues targets page can see it:
+
+http://192.168.31.88:9090/targets?search=#pool-hello
+
+![image-20230730095756558](image-20230730095756558.png)
+
+
+
+
+
+Copy graphana dashboard id
+
+https://grafana.com/grafana/dashboards/11157-druid-connection-pool-dashboard/
+
+12900
+
+
+
+Set promethues datasource @ graphana
+
+![image-20230730100606979](image-20230730100606979.png)
+
+
+
+import into graphana
+
+![image-20230730100318523](image-20230730100318523.png)
+
+
+
+dash board like this
+
+![image-20230730102101875](image-20230730102101875.png)
