@@ -1171,3 +1171,26 @@ import into graphana
 dash board like this
 
 ![image-20230730102101875](image-20230730102101875.png)
+
+
+
+
+
+# Log
+
+- 桥接使当前代码指向slf4j， 例如代码中用的是JUL， 使用jul-to-slf4j桥接到slf4j
+- 适配器是真正log的实现绑定，例如代码使用slf4j,配置使用log4j2.xml，你需要用log4j-slf4j-imple适配器使log4j2真正工作
+
+![image-20230812101359285](image-20230812101359285.png)
+
+
+
+Spring-jcl整合了JCL(apache commons logging)  -- LogAdapter will 
+
+apache commons logging是门面，真正的实现LogAdapter会根据ClassLoader中有哪个实现就使用哪个
+
+
+
+Springboot(spring-boot-start-logging)使用slf4j做门面，JCL的 LogAdapter看到有SLF4J会把实现自动转过来。但是你必须把apache commons logging排掉。
+
+![image-20230812101556351](image-20230812101556351.png)
