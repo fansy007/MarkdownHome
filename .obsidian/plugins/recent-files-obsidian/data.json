@@ -1,0 +1,19 @@
+{
+  "recentFiles": [
+    {
+      "basename": "nginx-2023",
+      "path": "basic/nginx-2023.md"
+    },
+    {
+      "basename": "spring-boot",
+      "path": "spirng-boot/spring-boot.md"
+    },
+    {
+      "basename": "lamda",
+      "path": "basic/lamda.md"
+    }
+  ],
+  "omittedPaths": [],
+  "maxLength": null,
+  "openType": "tab"
+}
