@@ -2,8 +2,6 @@
 
 Array是数组，Collection是集合，Arrays.asList转出来的List是一个固定长度的List本质还是数组
 
-
-
 ## How to create Stream
 
 
@@ -59,7 +57,7 @@ System.out.println(IntStream.rangeClosed(1,100).sum());
 
 # Box
 
-IntStreamu不能直接转数组，需要box之后转
+IntStream不能直接转数组，需要box之后转
 
 ```java
 List<Integer> numbers = IntStream.of(1,3,5,7,9).boxed().collect(Collectors.toList());
@@ -123,6 +121,8 @@ Stream.of("This","is","a","cat").reduce(String::concat).orElse(null)
 
 ### reduce复杂用法
 
+[go to head](#Stream)
+
 ==init，accumulator，combinor==
 
 
@@ -147,7 +147,33 @@ Stream.of("This","is","a","cat").reduce(String::concat).orElse(null)
 和 Stream::collect方法相似，但不完全相同 (这里都是不反回的BI consumer，reduce是要返回 BI function)
 
 ```java
-ArrayList<String> words = Stream.of("This", "is", "a", "cat").collect(ArrayList<String>::new,(lst, v) -> lst.add(v),(lst1,lst2)->lst1.addAll(lst2));
+ArrayList<String> words = Stream.of("This", "is", "a", "cat").collect(ArrayList<String>::new,(lst, v) -> lst.add(v),(lst1,lst2)
+->lst1.addAll(lst2));
 
 ```
 
+
+# Wrap exception in Fun interface
+```java
+@FunctionalInterface  
+public interface FunctionWithExceptions<I, R, E extends Exception> {  
+    R apply(I input) throws E;  
+}
+
+public class ExceptionFunWrapper {  
+    public static <I, R, E extends Exception> Function<I,R> wrap(FunctionWithExceptions<I,R,E> fe) {  
+        return input -> {  
+            try {  
+                return fe.apply( input);  
+            } catch (Exception e) {  
+                throw new RuntimeException(e);  
+            }  
+        };  
+    }
+
+public static  void main(String args[]) {  
+        List<String> sampeStrings = Arrays.asList("a=4","http://aaa.com?a=123&b=456");  
+        sampeStrings.stream().map(wrap(input -> URLEncoder.encode(input,"UTF-8"))).forEach(System.out::println);  
+    }  
+}
+```

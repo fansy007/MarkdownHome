@@ -1,15 +1,16 @@
 ## start
+[[docker_k8s#1、centos下安装docker]]  [[docker2023]]
 ```shell
 docker run --name nginx -d -p 88:80 --restart always -v /home/hg26502/nginx:/usr/share/nginx/html nginx:latest
 
 ```
-## 
+## conf
 ```shell
 mkdir /home/hg26502/nginx/conf/
 docker cp nginx:/etc/nginx/ /home/hg26502/nginx/conf/
 ```
 
-rerun
+## rerun
 ```shell
 docker rm -f nginx
 docker run --name nginx -d -p 88:80 --restart always -v /home/hg26502/nginx:/usr/share/nginx/html \
@@ -99,4 +100,5 @@ map $request_method $trade_host {
   default $host
 }
 ```
-
+if $request_method=GET， $trade_host=tpsc-query-trade-api-......
+other cases, $trade_host = $host

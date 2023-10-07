@@ -1,3 +1,4 @@
+![[Pasted image 20231007195139.png]]
 # Web page
 
 https://spring.io/projects/spring-boot

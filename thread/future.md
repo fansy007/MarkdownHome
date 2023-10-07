@@ -325,6 +325,10 @@ Provide thread pool for completable future using
 
 We should destroy self defined ExecutorService in spring life cycles, to avoid app stuck when shutdown service
 
+
+
+自定义线程池可以做到特定业务线程隔离。
+
 ```java
 @Configuration
 public class ExecutorServiceConfig {
