@@ -33,15 +33,15 @@
       {
         "name": "",
         "active": true,
-        "type": "FILES",
-        "pattern": "image-20231001111115422.png.md",
-        "patternType": "STRICT"
+        "type": "FILES_AND_DIRECTORIES",
+        "pattern": "Pasted image*",
+        "patternType": "WILDCARD"
       },
       {
         "name": "",
         "active": true,
         "type": "FILES_AND_DIRECTORIES",
-        "pattern": "image-20231001111115422.png.md",
+        "pattern": "",
         "patternType": "WILDCARD"
       }
     ]
