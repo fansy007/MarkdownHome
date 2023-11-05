@@ -1,25 +1,29 @@
-# reboost
+#cloud [[docker & k8s]]
+# 家组网方式
+主wifi Lan 192.168.31.1
+DHCP 设 110-254
+副wifi bedroom wan 192.168.31.101
+副wifi qjgeng wan 192.168.31.103
 
+---
+三网桥接
+虚拟机分配
+桥接模式 mac_centeros manual set:
+192.168.31.88
+
+---
+# reboost
 ```sh
 systemctl restart networkManager #centeros8
 shutdown -r now
 
 ```
-
-
-
-
-
 # Install redis
-
 prepare a folder
-
 ```sh
 /home/hg26502/redis
 /home/hg26502/redis/data
 ```
-
-
 
 add config file
 

@@ -1,5 +1,5 @@
 ## start
-[[docker_k8s#1、centos下安装docker]]  [[docker2023]]
+[[docker & k8s#1、centos下安装docker]]  [[docker2023]]
 ```shell
 docker run --name nginx -d -p 88:80 --restart always -v /home/hg26502/nginx:/usr/share/nginx/html nginx:latest
 
@@ -16,6 +16,7 @@ docker rm -f nginx
 docker run --name nginx -d -p 88:80 --restart always -v /home/hg26502/nginx:/usr/share/nginx/html \
 -v /home/hg26502/nginx/conf/nginx:/etc/nginx nginx:latest
 ```
+
 ## conf
 ```shell
 /etc/nginx/nginx.conf

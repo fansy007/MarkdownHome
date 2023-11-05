@@ -1,31 +1,22 @@
+#java
 # Stream
-
 Array是数组，Collection是集合，Arrays.asList转出来的List是一个固定长度的List本质还是数组
-
 ## How to create Stream
-
-
-
 ### Stream::of(T.. values)
 
 Stream::of  是把 T.. values转Stream
-
 Arrays::stream 是吧 Array转Stream
 
 ```java
     // Arrays::stream
-		public static<T> Stream<T> of(T... values) {
+	public static<T> Stream<T> of(T... values) {
         return Arrays.stream(values);
     }
 ```
 
-
-
 ```java
 String result = Stream.of("one","two","three").collect(Collectors.joining(","));
 ```
-
-
 
 ### Stream::iterator
 
@@ -44,17 +35,10 @@ Stream.iterate(2L, num -> num*num).limit(10).forEach(System.out::println);
 ```java
 Stream.generate(()-> new Random().nextInt(100)).limit(10).forEach(System.out::println);
 ```
-
-
-
 ### IntStream, LongStream::range
-
 ```java
 System.out.println(IntStream.rangeClosed(1,100).sum());
 ```
-
-
-
 # Box
 
 IntStream不能直接转数组，需要box之后转
@@ -88,7 +72,7 @@ toArray(size -> new CompletableFuture[size]) 注意这个是一个套路
 ```java
         CompletableFuture[] futures = IntStream.rangeClosed(1,10).mapToObj(i->
                 CompletableFuture.runAsync(System.out::println)
-        ).toArray(size -> new CompletableFuture[size]);
+        ).toArray(size -> new CompletableFuture[size]); //也可写成 CompletableFuture[]::new
         
         CompletableFuture.allOf(futures).join();
 ```
@@ -175,5 +159,39 @@ public static  void main(String args[]) {
         List<String> sampeStrings = Arrays.asList("a=4","http://aaa.com?a=123&b=456");  
         sampeStrings.stream().map(wrap(input -> URLEncoder.encode(input,"UTF-8"))).forEach(System.out::println);  
     }  
+}
+```
+
+---
+# String::codePoints
+
+create a IntStream with codePoints
+```java
+"Hello world !@#$@$#@$中文".
+codePoints().mapToObj(Character::getName).forEach(System.out::println);
+```
+
+```java
+public boolean isPalidrome(String s) {  
+	s = s.codePoints().filter(Character::isLetterOrDigit)
+	.map(Character::toLowerCase)  
+	.collect(StringBuilder::new,StringBuilder::appendCodePoint,StringBuilder::append).toString();  
+	  
+	return s.equals(new StringBuilder(s).reverse().toString());  
+}
+```
+---
+# FlatMap
+![[Draw flat map]]
+```Java
+Master m1 = new Master("Zhang", new String[]{"Java","C++"});  
+Master m2 = new Master("Wang", new String[]{"Python","C++"});  
+Stream.of(m1,m2).flatMap(master -> Stream.of(master.getSkills())).distinct().forEach(System.out::println);
+```
+
+## concat streams
+```java
+public <T> Stream<T> concatStream(Stream<T> ...streams) {  
+	return Stream.of(streams).flatMap(Function.identity());  
 }
 ```

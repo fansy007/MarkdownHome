@@ -1195,3 +1195,9 @@ apache commons logging是门面，真正的实现LogAdapter会根据ClassLoader�
 Springboot(spring-boot-start-logging)使用slf4j做门面，JCL的 LogAdapter看到有SLF4J会把实现自动转过来。但是你必须把apache commons logging排掉。
 
 ![image-20230812101556351](image-20230812101556351.png)
+
+
+
+# Spring bean initializing
+
+![image-20231022152611641](image-20231022152611641.png)
