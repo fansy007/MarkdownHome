@@ -1,4 +1,5 @@
 #java #basic 
+[[gradle_details.md]]
 # plugin
 
 ## simple import plugin
@@ -21,7 +22,7 @@ task showSimpleVersions {
 ```
 
 ## core plugin
-no need import
+no need import // see /opt/homebrew/Cellar/gradle/8.1.1/libexec/src/plugins/org/gradle/api/plugins
 ```json
 apply plugin: 'java'
 
@@ -251,7 +252,13 @@ apply plugin: 'com.example.hello'
 如果想在config周期调用一个包的方法，必须在buildScript中引用
 ```groovy
 buildscript {
-	depedencies {
+	repositories {
+        maven {
+            allowInsecureProtocol = true
+            url "http://maven.aliyun.com/nexus/content/groups/public/"
+        }
+    }
+	dependencies {
         classpath 'org.apache.commons:commons-lang3:3.13.0'
     }
 }
@@ -261,6 +268,7 @@ buildSrc目录会在build时被打成一个jar
 被src中build.gradle文件在config周期直接使用
 
 buildSrc/build.gradle
+// import org.apache.commons.lang3.StringUtils;
 ```groovy
 project.dependencies {
     implementation 'org.apache.commons:commons-lang3:3.13.0'

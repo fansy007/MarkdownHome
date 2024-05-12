@@ -5,7 +5,8 @@
 shutdown -r now
 
 **Root**
-sudo su
+sudo su -切换到root
+su hg26502 - 切换到你的用户名
 
 Boost **Item** 启动项清理可看看这些目录是否干净
 ```sh
@@ -45,7 +46,7 @@ brew install gradle
 ```
 
 ## Setup Git
-[[Git]]
+[[Git - 2024]]
 
 ### git account
 git: 46607593@qq.com/Yunfei@002
@@ -111,11 +112,20 @@ also project ignore file name is ``.gitignore``
 
 ---
 ### push local code remote
+如何在本地初始化git仓库并提交远程
 ```sh
 ##push local code remote
-git remote remove origin
-git remote add origin git@gitee.com:fansy007/mark-down-home.git
-git push -u origin master (-u means --set-upstream)
+mkdir git-practice
+cd git-practice
+git init 
+touch README.md
+git add README.md
+git commit -m "first commit"
+git remote add origin https://gitee.com/fansy007/git-practice.git
+
+git push --set-upstream origin master
+# 上面指令 --set-upstream 等价于 -u，作用是使本地branch于远程master branch挂钩
+# 下次可以直接提交了
 ```
 
 ---
