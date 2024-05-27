@@ -13,7 +13,6 @@ mkdir -p /mydata/elasticsearch/config
 mkdir -p /mydata/elasticsearch/data
 mkdir -p /mydata/elasticsearch/plugins
 
-echo "htpp.host: 0.0.0.0">>/mydata/elasticsearch/config/elasticsearch.yml
 cd /mydata/elasticsearch
 chmod -R 777 *
 

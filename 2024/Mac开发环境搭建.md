@@ -35,7 +35,12 @@ export PATH=$JAVA_HOME/bin:/Users/zou/work/maven36/bin:$PATH
 ```
 Mirror brew
 ```sh
-git remote set-url origin https://mirrors.aliyun.com/homebrew/brew.git
+echo 'export HOMEBREW_API_DOMAIN="https://mirrors.aliyun.com/homebrew-bottles/api"' >> ~/.zshrc
+echo 'export HOMEBREW_BREW_GIT_REMOTE="https://mirrors.aliyun.com/homebrew/brew.git"' >> ~/.zshrc
+echo 'export HOMEBREW_CORE_GIT_REMOTE="https://mirrors.aliyun.com/homebrew/homebrew-core.git"' >> ~/.zshrc
+echo 'export HOMEBREW_BOTTLE_DOMAIN="https://mirrors.aliyun.com/homebrew/homebrew-bottles"' >> ~/.zshrc
+source ~/.zshrc
+brew update
 ```
 
 
