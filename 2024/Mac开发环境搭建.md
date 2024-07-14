@@ -1,4 +1,11 @@
 #basic #java #cloud
+# 设置java home
+>[!note]+ mac 查询 java home
+/usr/libexec/java_home
+
+>[!note]+ 写入启动脚本
+echo 'export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk-17.jdk/Contents/Home' >> ~/.zshrc
+source ~/.zshrc
 
 # 环境配置
 **重启linux**

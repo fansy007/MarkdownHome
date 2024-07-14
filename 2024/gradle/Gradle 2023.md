@@ -1,5 +1,5 @@
 #java #basic 
-[[gradle_details.md]]
+[[gradle_details]]
 # plugin
 
 ## simple import plugin
@@ -330,7 +330,7 @@ intellij vm option
 ## api vs implementation
 
 - a impl b, b impl c -> a can't use c
- for example c is apache commons, a project can't apache commons functions
+ for example c is apache commons, a project can't invoke apache commons functions
 
 - a impl b, b api c -> a can use c
 the purpose is for multi module project, for example:

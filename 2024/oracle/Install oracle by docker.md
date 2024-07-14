@@ -8,6 +8,9 @@ docker run -d --name oracle -p 1521:1521 -e ORACLE_PASSWORD=198263 gvenzl/oracle
 docker exec -it oracle sqlplus sys/198263@localhost:1521/XEPDB1 as sysdba
 ```
 
+# vscode plugin
+Oracle Developer Tools for VS Code (SQL and PLSQL)
+
 # 建立用户
 ```sh
 docker exec -it oracle sqlplus sys/198263@localhost:1521/XEPDB1 as sysdba

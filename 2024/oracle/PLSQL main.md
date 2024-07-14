@@ -1,4 +1,6 @@
 # Basic
+保持out能够答应
+==SET SERVEROUTPUT ON;==
 ## 基本格式
 
 ```sql
@@ -178,7 +180,6 @@ END;
 /
 ```
 
-
 ## !!!带输入输出变量的procedure
 
 这样写可以使no data found 时不会抛错
@@ -201,6 +202,64 @@ v_out EMP.ENAME%TYPE;
 BEGIN
     queryByNo(1002, v_out);
     dbms_output.put_line('hello '||v_out);
+END;
+/
+```
+
+## !!! sample query objType arrayType Cursor
+```sql
+-- 名称       空值?      类型           
+-- -------- -------- ------------ 
+-- EMPNO    NOT NULL NUMBER(4)    
+-- ENAME             VARCHAR2(10) 
+-- JOB               VARCHAR2(9)  
+-- MGR               NUMBER(4)    
+-- HIREDATE          DATE         
+-- SAL               NUMBER(7,2)  
+-- COMM              NUMBER(7,2)  
+-- DEPTNO            NUMBER(2) 
+create or replace TYPE empObj AS OBJECT (
+    empno NUMBER(4),
+    ename VARCHAR2(10),
+    sal   NUMBER(7,2)
+);
+/
+
+create or replace TYPE empArray AS TABLE OF empObj;
+/
+
+create or replace procedure queryEmp(p_empno IN EMP.EMPNO%TYPE, emps OUT empArray) is
+    CURSOR c_emp is
+        select * FROM EMP where EMPNO>p_empno;
+    v_emp EMP%ROWTYPE;
+BEGIN
+    emps:=empArray();
+    OPEN c_emp;
+    LOOP
+    FETCH c_emp INTO v_emp;
+    if (c_emp%FOUND) then
+        emps.extend();
+        dbms_output.put_line('do extend');
+        emps(emps.count):=empObj(v_emp.empno,v_emp.ENAME,v_emp.SAL); -- table type index start with 1 not 0 
+    end if;
+    EXIT WHEN c_emp%NOTFOUND;
+    END LOOP;
+    
+    CLOSE c_emp;
+END;
+/
+
+DECLARE 
+    emps empArray;
+    i INTEGER;
+BEGIN
+    queryEmp(1,emps);
+    i:=emps.FIRST;
+    WHILE i is not NULL LOOP
+        dbms_output.put_line(emps(i).empno||' '||emps(i).ename||' '||emps(i).sal);
+        i:=emps.NEXT(i);
+    END LOOP;
+
 END;
 /
 ```
@@ -244,3 +303,82 @@ public class OracleDbConfig {
 }
 ```
 
+
+# Function
+function will return a value
+```sql
+SET SERVEROUTPUT ON;
+
+CREATE or REPLACE FUNCTION fetchSalaryByName(ename EMP.ENAME%TYPE) RETURN EMP.SAL%TYPE IS
+CURSOR cursor_sal is SELECT SAL FROM EMP WHERE ENAME=ename;
+v_sal EMP.SAL%TYPE;
+v_sal_summary EMP.SAL%TYPE;
+
+BEGIN
+    v_sal_summary:=0;
+    OPEN cursor_sal;
+    LOOP
+        fetch cursor_sal INTO v_sal;
+        IF cursor_sal%FOUND THEN
+            v_sal_summary:=v_sal_summary+v_sal;
+        END IF;
+        EXIT WHEN cursor_sal%NOTFOUND;
+    END LOOP;
+
+    CLOSE cursor_sal;
+    return v_sal_summary;
+END fetchSalaryByName;
+/
+
+DECLARE
+sal EMP.SAL%TYPE;
+BEGIN
+--SELECT fetchSalaryByName('BLAKE') INTO sal FROM DUAL;
+sal:=fetchSalaryByName('BLAKE');
+DBMS_OUTPUT.put_line(sal);
+END;
+/
+```
+
+# Package
+
+CREATE OR REPLACE PACKAGE fansy007 IS
+CREATE OR REPLACE PACKAGE BODY fansy007 IS
+
+```sql
+SET SERVEROUTPUT ON;
+CREATE OR REPLACE PACKAGE fansy007 IS
+    PROCEDURE sayHello(input_word IN OUT VARCHAR2);
+    FUNCTION sayHelloFun(input_word VARCHAR2) return VARCHAR2;
+END;
+/
+
+CREATE OR REPLACE PACKAGE BODY fansy007 IS
+    PROCEDURE sayHello(input_word IN OUT VARCHAR2) IS
+
+    BEGIN
+        input_word:=sayHelloFun(input_word);
+    END sayHello;    
+
+    FUNCTION sayHelloFun(input_word VARCHAR2) return VARCHAR2 IS
+        o_word VARCHAR2(30);
+    BEGIN
+        o_word:='Hello, '||input_word;
+        RETURN o_word;
+    END sayHelloFun;
+END;
+/
+
+SELECT fansy007.sayHelloFun('TOM') FROM dual;
+
+
+DECLARE
+    v_word VARCHAR2(30);
+BEGIN
+    v_word:='Lee';
+    fansy007.sayHello(v_word);
+    DBMS_OUTPUT.PUT_LINE(v_word);
+END;
+```
+
+26讲19分钟 待续
