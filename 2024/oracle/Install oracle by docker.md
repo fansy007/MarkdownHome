@@ -8,6 +8,15 @@ docker run -d --name oracle -p 1521:1521 -e ORACLE_PASSWORD=198263 gvenzl/oracle
 docker exec -it oracle sqlplus sys/198263@localhost:1521/XEPDB1 as sysdba
 ```
 
+
+mirror
+```sh
+Docker 的配置文件位于 ~/.docker/config.json
+
+{
+  "registry-mirrors": ["https://01uinh3k.mirror.aliyuncs.com"]
+}
+```
 # vscode plugin
 Oracle Developer Tools for VS Code (SQL and PLSQL)
 
